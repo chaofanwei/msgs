@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.database.Cursor
 import android.os.Bundle
+import android.widget.Toast
 import android.provider.ContactsContract
 import android.telephony.SmsManager
 import android.util.Log
@@ -20,6 +21,7 @@ import com.webianks.hatkemessenger.R
 import com.webianks.hatkemessenger.constants.Constants
 import com.webianks.hatkemessenger.receivers.DeliverReceiver
 import com.webianks.hatkemessenger.receivers.SentReceiver
+import com.webianks.hatkemessenger.services.SaveSmsService
 
 class NewSMSActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -79,7 +81,7 @@ class NewSMSActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun sendSMSNow() {
+    private fun sendSMSNow_bak() {
         val SENT = "SMS_SENT"
         val DELIVERED = "SMS_DELIVERED"
         val sentPI = PendingIntent.getBroadcast(this, 0, Intent(SENT), 0)
@@ -88,6 +90,20 @@ class NewSMSActivity : AppCompatActivity(), View.OnClickListener {
         registerReceiver(deliveryBroadcastReceiver, IntentFilter(DELIVERED))
         val sms = SmsManager.getDefault()
         sms.sendTextMessage(phoneNo, null, message, sentPI, deliveredPI)
+    }
+
+    private fun sendSMSNow() {
+        val serviceIntent = Intent(this, SaveSmsService::class.java)
+        //serviceIntent.putExtra("sender_no", sms.displayOriginatingAddress)
+        serviceIntent.putExtra("sender_no", phoneNo)
+        serviceIntent.putExtra("message", message)
+        //serviceIntent.putExtra("date", sms.timestampMillis)
+        startService(serviceIntent)
+
+        val text = "发送成功"
+        val duration = Toast.LENGTH_SHORT
+        val toast = Toast.makeText(applicationContext, text, duration)
+        toast.show()
     }
 
     fun pickContact(v: View?) {
